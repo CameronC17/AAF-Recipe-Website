@@ -1,0 +1,2 @@
+1. edit dbFill, stuff like ingredients need to be changed to JSON object
+2. check all vars are good quality and useful

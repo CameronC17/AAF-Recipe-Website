@@ -1,0 +1,57 @@
+//http://stackoverflow.com/questions/10290621/how-do-i-partially-update-an-object-in-mongodb-so-the-new-object-will-overlay
+//https://gist.github.com/sym3tri/858142 - update single field
+
+var mongodb = require('mongodb');
+var MongoClient = mongodb.MongoClient;
+
+var host = "127.0.0.1"; // or maybe localhost
+var port = 27017;
+var db_name = "recipewebsite";
+var mongodb_url = "mongodb://" + host + ":" + port + "/" + db_name;
+//For objectID...
+var ObjectId = require('mongodb').ObjectID;
+
+var searchItem;
+var updateItem;
+
+exports.updateRecipe = function (req, res) {
+    searchItem = {
+        "_id": new ObjectId(req.body.recipeID)
+    };
+    var editItems = {};
+    //Seeing what has been requested to change  
+    if (req.body.recipeName)
+    {
+        editItems.name = req.body.recipeName.toLowerCase();
+    }
+    if (req.body.author)
+    {
+        editItems.author = req.body.author.toLowerCase();
+    }
+    if (req.body.instructions)
+    {
+        editItems.content = req.body.instructions.toLowerCase();
+    }
+
+    updateItem = {
+        $set : editItems
+    };
+    connectAndUpdate("recipes", searchItem, updateItem);
+}
+
+function connectAndUpdate(whatCollection, searchItem, updateItem) {
+MongoClient.connect(mongodb_url, function (err, db) {
+    if (err) {
+        console.log(new Date() + " Failed to connect to " + mongodb_url);
+    } else {
+        var updateData = db.collection(whatCollection);
+        updateData.update(searchItem, updateItem, false, true, function(err, results) {
+            if (err)
+                console.log(err);
+            else
+                console.log(results);
+            db.close();
+        });
+    }
+});
+}
